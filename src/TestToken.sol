@@ -28,10 +28,6 @@ contract TestToken {
 
     error NoTokensReceived(address recipient);
 
-    constructor() {
-        _mint(msg.sender, 21000000 * 10 ** 18);
-    }
-
     function _msgSender() internal view returns (address) {
         return msg.sender;
     }
@@ -48,6 +44,10 @@ contract TestToken {
 
     function allowance(address owner, address spender) public view returns (uint256) {
         return _allowances[owner][spender];
+    }
+
+    function mint(uint256 value) public {
+        _mint(msg.sender, value);
     }
 
     function approve(address spender, uint256 value) public returns (bool) {
@@ -68,7 +68,7 @@ contract TestToken {
         address sender = _msgSender();
         _approve(sender, recipient, value);
 
-        if (isContract(sender)) {
+        if (isContract(recipient)) {
             bool result = TokenRecipient(recipient).tokensReceived(sender, value, data);
             if (result == false) {
                 revert NoTokensReceived(recipient);

@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-
-contract MyERC721 is ERC721URIStorage {
+import "lib/openzeppelin-contracts/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+contract MyNFT is ERC721URIStorage {
     uint256 private counter;
     uint256 constant private TOTAL_SUPPLY = 10000;
 

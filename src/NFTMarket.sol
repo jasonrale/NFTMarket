@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
@@ -45,13 +45,8 @@ contract NFTMarket {
         _owner = msg.sender;
     }
 
-    function isNFT(address contractAddress) public view returns (bool) {
-        ERC165 checker = ERC165(contractAddress);
-        return checker.supportsInterface(_INTERFACE_ID_ERC721) || checker.supportsInterface(_INTERFACE_ID_ERC1155);
-    }
-
-    function isOwner(address nft, uint256 tokenId) public view returns (bool) {
-        return IERC721(nft).ownerOf(tokenId) == msg.sender;
+    function querySaleList(address nft, uint256 tokenId) public view returns (Item memory) {
+        return saleList[nft][tokenId];
     }
 
     function listNFT(
@@ -63,7 +58,7 @@ contract NFTMarket {
         _ownerCheck(nft, tokenId);
         address seller = msg.sender;
         saleList[nft][tokenId] = Item(tokenId, nft, currency, seller, address(0), FOR_SALE, price);
-
+        
         emit ItemListed(nft, tokenId, price, currency, msg.sender, FOR_SALE);
     }
 
@@ -93,7 +88,7 @@ contract NFTMarket {
         emit ItemSold(nft, tokenId, buyer, SOLD);
     }
  
-    function tokenRecieved(address from, uint256 value, bytes memory data) external {
+    function tokenRecieved(address from, uint256 value, bytes memory data) external returns (bool) {
         Item memory param = abi.decode(data, (Item));
         address nft = param.nft;
         uint256 tokenId = param.tokenId;
@@ -101,7 +96,18 @@ contract NFTMarket {
         
         _buyCheck(item, from);
         _buy(tokenId, item, from);
+
         emit ItemSold(item.nft, tokenId, from, SOLD);
+        return true;
+    }
+
+    function isNFT(address contractAddress) internal view returns (bool) {
+        ERC165 checker = ERC165(contractAddress);
+        return checker.supportsInterface(_INTERFACE_ID_ERC721) || checker.supportsInterface(_INTERFACE_ID_ERC1155);
+    }
+
+    function isOwner(address nft, uint256 tokenId) internal view returns (bool) {
+        return IERC721(nft).ownerOf(tokenId) == msg.sender;
     }
 
     function _buy(uint256 tokenId, Item memory item, address buyer) internal {
