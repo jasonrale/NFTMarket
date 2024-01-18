@@ -98,8 +98,6 @@ contract NFTMarketTest is Test {
         // Mint usdt and buy NFT by tokenRecieved
         vm.startPrank(lisa);
         usdt.mint(price);
-        usdt.approve(marketAddr, price);
-        //market.tokenRecieved(lisa, price, abi.encode(NFTMarket.Item(tokenId, nftAddr, address(0), address(0), address(0), 0, 0)));
         usdt.transferWithCallback(marketAddr, price, abi.encode(NFTMarket.Item(tokenId, nftAddr, address(0), address(0), address(0), 0, 0)));
         vm.stopPrank();
 
