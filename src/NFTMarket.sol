@@ -93,6 +93,7 @@ contract NFTMarket {
         address nft = param.nft;
         uint256 tokenId = param.tokenId;
         Item memory item = saleList[nft][tokenId];
+        require(item.price == value, "Token amount error");
         
         _buyCheck(item, from);
         _buy(tokenId, item, from);
