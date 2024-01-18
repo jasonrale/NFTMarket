@@ -10,6 +10,7 @@ contract NFTMarketTest is Test {
     uint8 public FOR_SALE = 0;
     uint8 public SOLD = 1;
     uint8 public CANCELED = 2;
+    uint8 public FEERATE = 25;
 
     MyNFT public nft;
     NFTMarket public market;
@@ -27,7 +28,7 @@ contract NFTMarketTest is Test {
         usdt = new TestToken();
         nft = new MyNFT();
         tokenId = nft.mint(jason,"");
-        market = new NFTMarket(25, treasury);
+        market = new NFTMarket(FEERATE, treasury);
 
     }
 
@@ -58,8 +59,7 @@ contract NFTMarketTest is Test {
         assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, currency, jason, address(0), CANCELED, price)));
     }
 
-    function test_buyNFT() public {
-        uint256 price = 1000 * 1e18;
+    function test_buyNFT(uint256 price) public {
         address nftAddr = address(nft);
 
         // List NFT
@@ -70,22 +70,22 @@ contract NFTMarketTest is Test {
 
         // Mint usdt and buy NFT
         vm.startPrank(lisa);
-        usdt.mint(1000 * 1e18);
+        usdt.mint(price);
         usdt.approve(address(market), price);
         market.buyNFT(nftAddr, tokenId);
         vm.stopPrank();
 
         NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        assertEq(usdt.balanceOf(jason), 975 * 1e18);
+        uint256 fee = price / 1000 * FEERATE;
+        assertEq(usdt.balanceOf(jason), price - fee);
         assertEq(usdt.balanceOf(lisa), 0);
-        assertEq(usdt.balanceOf(treasury), 25 * 1e18);
+        assertEq(usdt.balanceOf(treasury), fee);
         assertEq(nft.ownerOf(tokenId), lisa);
         assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
     }
 
-    function test_tokenRecieved() public {
-        uint256 price = 1000 * 1e18;
+    function test_tokenRecieved(uint256 price) public {
         address nftAddr = address(nft);
         address marketAddr = address(market);
 
@@ -103,9 +103,10 @@ contract NFTMarketTest is Test {
 
         NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        assertEq(usdt.balanceOf(jason), 975 * 1e18);
+        uint256 fee = price / 1000 * FEERATE;
+        assertEq(usdt.balanceOf(jason), price - fee);
         assertEq(usdt.balanceOf(lisa), 0);
-        assertEq(usdt.balanceOf(treasury), 25 * 1e18);
+        assertEq(usdt.balanceOf(treasury), fee);
         assertEq(nft.ownerOf(tokenId), lisa);
         assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
     }

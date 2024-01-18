@@ -121,7 +121,7 @@ contract NFTMarket {
         item.status = SOLD;
         saleList[nft][tokenId] = item;
 
-        uint256 fee = price * defaultFeeRate / 1000;
+        uint256 fee = price / 1000 * defaultFeeRate;
         IERC20(currency).safeTransferFrom(buyer, seller, price - fee);
         IERC20(currency).safeTransferFrom(buyer, _treasury, fee);
         IERC721(nft).safeTransferFrom(seller, buyer, tokenId);
