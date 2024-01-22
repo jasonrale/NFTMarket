@@ -1,13 +1,32 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NFT Marketplace</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div id="content">
+        <h1>NFT Marketplace</h1>
+        <div id="root"></div>
+        <div id="userAddress"></div>
+
+        <h2>List NFT</h2>
+        <form id="listForm">
+            <label for="nftId">NFT ID:</label><br>
+            <input type="text" id="nftId" name="nftId"><br>
+            <label for="price">Price:</label><br>
+            <input type="text" id="price" name="price"><br>
+            <input type="submit" value="List NFT">
+        </form>
+
+        <h2>Buy NFT</h2>
+        <form id="buyForm">
+            <label for="buyNftId">NFT ID:</label><br>
+            <input type="text" id="buyNftId" name="buyNftId"><br>
+            <input type="submit" value="Buy NFT">
+        </form>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <script src="main.js"></script>
+</body>
 </html>
