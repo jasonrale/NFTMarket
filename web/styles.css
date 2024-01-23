@@ -1,0 +1,53 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #000;
+    color: #0f0;
+}
+
+header {
+    text-align: right;
+    padding: 10px;
+    background-color: #333;
+}
+
+header button {
+    background-color: #444;
+    color: #0f0;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+#list-item form {
+    margin-bottom: 20px;
+}
+
+#list-item form input, #list-item form button {
+    background-color: #333;
+    color: #0f0;
+    border: none;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+#list-item form button {
+    cursor: pointer;
+}
+
+#items-for-sale {
+    margin-top: 40px;
+}
+
+.item {
+    border: 1px solid #0f0;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.item button {
+    background-color: #333;
+    color: #0f0;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}

@@ -13,5 +13,11 @@ docs/
 # Dotenv file
 .env
 
+logs
+*.log
+
 .github
 lib
+.vscode/*
+!.vscode/extensions.json
+node_modules

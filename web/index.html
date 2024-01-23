@@ -1,32 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFT Marketplace</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="content">
-        <h1>NFT Marketplace</h1>
-        <div id="root"></div>
-        <div id="userAddress"></div>
+    <header>
+        <div id="wallet-info" style="display: none;">
+            <span id="wallet-address"></span>
+        </div>
+        <button id="connect-button">Connect to MetaMask</button>
+    </header>
 
-        <h2>List NFT</h2>
-        <form id="listForm">
-            <label for="nftId">NFT ID:</label><br>
-            <input type="text" id="nftId" name="nftId"><br>
-            <label for="price">Price:</label><br>
-            <input type="text" id="price" name="price"><br>
-            <input type="submit" value="List NFT">
-        </form>
+    <main>
+        <section id="list-item">
+            <h2>List NFT</h2>
+            <form>
+                <label for="nft-address">NFT Address:</label>
+                <input type="text" id="nft-address">
+                <label for="token-id">Token ID:</label>
+                <input type="number" id="token-id">
+                <label for="price">Price:</label>
+                <input type="number" id="price">
+                <label for="currency-address">Currency Address:</label>
+                <input type="text" id="currency-address">
+                <button type="submit">List NFT</button>
+            </form>
+        </section>
 
-        <h2>Buy NFT</h2>
-        <form id="buyForm">
-            <label for="buyNftId">NFT ID:</label><br>
-            <input type="text" id="buyNftId" name="buyNftId"><br>
-            <input type="submit" value="Buy NFT">
-        </form>
-    </div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script src="main.js"></script>
+        <section id="items-for-sale">
+            <h2>Items for Sale</h2>
+            <div id="items-list"></div>
+        </section>
+
+        <div class="logs">
+
+        </div>
+    </main>
+
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
