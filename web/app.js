@@ -1,10 +1,15 @@
 let wallet;
-let contract;
+let nftContract;
+let nftMarketContract;
 let listMap = new Map();
-const contractAddress = "0x045474b5D6578fd2b46A87321a6a2a3952c6dF13";
-const abi = [
+const nftMarketAddress = "0x045474b5D6578fd2b46A87321a6a2a3952c6dF13";
+const nftABI = [
+    "function approve(address to, uint256 tokenId) public",
+    "function getApproved(uint256 tokenId) public view returns (address)"
+];
+const marketABI = [
   "function listNFT(address nft, uint256 tokenId, uint256 price, address currency) external",
-  "function buyNFT( address nft, uint256 tokenId) public ",
+  "function buyNFT( address nft, uint256 tokenId) public",
 ];
 
 const connectButton = document.getElementById("connect-button");
@@ -17,13 +22,16 @@ document
   .getElementById("list-item")
   .addEventListener("submit", async (event) => {
     event.preventDefault();
-    const tokenId = ethers.BigNumber.from(
-      document.getElementById("token-id").value
-    );
-    const price = ethers.BigNumber.from(document.getElementById("price").value);
-    const nftAddr = document.getElementById("nft-address").value;
+    const tokenId = ethers.BigNumber.from( document.getElementById("token-id").value);
+    const price = ethers.utils.parseUnits(document.getElementById("price").value, 'ether');
     const currency = document.getElementById("currency-address").value;
-    await contract.listNFT(nftAddr, tokenId, price, currency);
+    const nftAddr = document.getElementById("nft-address").value;
+    nftContract = new ethers.Contract(nftAddr, nftABI, signer);
+
+    console.log(await nftContract.getApproved(1),"getinfo")
+    const info=await nftContract.approve(nftMarketAddress, tokenId);
+    await info.wait()
+    await nftMarketContract.listNFT(nftAddr, tokenId, price, currency);
 
     updateItemsList();
   });
@@ -47,7 +55,7 @@ async function updateItemsList() {
   //         <button>Buy</button>
   //     `;
   //     itemElement.querySelector("button").addEventListener("click", async () => {
-  //         await contract.buyNFT(item.tokenId, { value: item.price });
+  //         await nftMarketContract.buyNFT(item.tokenId, { value: item.price });
   //         updateItemsList();
   //     });
   //     itemsList.appendChild(itemElement);
@@ -61,7 +69,7 @@ async function getLogs(fromBlock, toBlock) {
   let filter = {
     fromBlock,
     toBlock,
-    address: contractAddress,
+    address: nftMarketAddress,
   };
 
   // 检查 toBlock 是不是已经是最新的区块
@@ -78,10 +86,13 @@ async function getLogs(fromBlock, toBlock) {
     if (currentBlock <= fromBlock && logs.length == 0) {
       console.log("begin monitor");
       //监听
-      contract.on("ItemListed", function (a0, a1, a2, a3, a4, a5, event) {
-        decodeEvents([event.log]);
-      });
-      contract.on("ItemSold", function (a0, a1, a2, a3, event) {
+      nftMarketContract.on(
+        "ItemListed",
+        function (a0, a1, a2, a3, a4, a5, event) {
+          decodeEvents([event.log]);
+        }
+      );
+      nftMarketContract.on("ItemSold", function (a0, a1, a2, a3, event) {
         decodeEvents([event.log]);
       });
     } else {
@@ -92,15 +103,15 @@ async function getLogs(fromBlock, toBlock) {
 }
 
 function decodeEvents(logs) {
-  const listEvent = contract.getEvent("ItemListed").fragment;
-  const soldEvent = contract.getEvent("ItemSold").fragment;
+  const listEvent = nftMarketContract.getEvent("ItemListed").fragment;
+  const soldEvent = nftMarketContract.getEvent("ItemSold").fragment;
 
   for (var i = 0; i < logs.length; i++) {
     const item = logs[i];
     const eventId = item.topics[0]; // topic0
     if (eventId == listEvent.topicHash) {
       // listEvent Id
-      const data = contract.interface.decodeEventLog(
+      const data = nftMarketContract.interface.decodeEventLog(
         listEvent,
         item.data,
         item.topics
@@ -115,7 +126,7 @@ function decodeEvents(logs) {
     }
     if (eventId == withdrawEvent.topicHash) {
       // soldEvent Id
-      const data = contract.interface.decodeEventLog(
+      const data = nftMarketContract.interface.decodeEventLog(
         soldEvent,
         item.data,
         item.topics
@@ -141,12 +152,16 @@ async function updateWalletInfo() {
   const account = accounts[0];
   signer = provider.getSigner(account);
   wallet = signer;
-  contract = new ethers.Contract(contractAddress, abi, signer);
+  nftMarketContract = new ethers.Contract(nftMarketAddress, marketABI, signer);
 
   connectButton.style.display = "none";
-  let walletAddress = document.createElement("p");
-  walletAddress.innerText = `Connected: ${account}`;
-  connectButton.parentNode.appendChild(walletAddress);
+  let walletInfoDiv = document.getElementById("wallet-info");
+  let walletAddress = walletInfoDiv.querySelector("p");
+  if (!walletAddress) {
+    walletAddress = document.createElement("p");
+    connectButton.parentNode.appendChild(walletAddress);
+  }
+  walletAddress.innerText = `Connected: ${account}`; 
 }
 
 updateItemsList();
