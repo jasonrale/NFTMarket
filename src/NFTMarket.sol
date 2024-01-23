@@ -17,7 +17,7 @@ contract NFTMarket {
     uint8 public FOR_SALE = 0;
     uint8 public SOLD = 1;
     uint8 public CANCELED = 2;
-    
+
     address private _treasury;
     address private _owner;
     uint256 public defaultFeeRate;
@@ -34,10 +34,22 @@ contract NFTMarket {
 
     mapping(address nft => mapping(uint256 tokenId => Item)) public saleList;
 
-    event ItemListed(address nft, uint256 tokenId, uint256 price, address currency, address seller, uint8 status);
+    event ItemListed(
+        address nft,
+        uint256 tokenId,
+        uint256 price,
+        address currency,
+        address seller,
+        uint8 status
+    );
     event ItemSold(address nft, uint256 tokenId, address buyer, uint8 status);
     event ItemCanceled(address nft, uint256 tokenId, uint8 status);
-    event onReceived(address operator, address from, uint256 tokenId, bytes data);
+    event onReceived(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes data
+    );
 
     constructor(uint256 feeRate, address treasury) {
         defaultFeeRate = feeRate;
@@ -45,7 +57,10 @@ contract NFTMarket {
         _owner = msg.sender;
     }
 
-    function querySaleList(address nft, uint256 tokenId) public view returns (Item memory) {
+    function querySaleList(
+        address nft,
+        uint256 tokenId
+    ) public view returns (Item memory) {
         return saleList[nft][tokenId];
     }
 
@@ -53,19 +68,24 @@ contract NFTMarket {
         address nft,
         uint256 tokenId,
         uint256 price,
-        address currency) external {
-
+        address currency
+    ) external {
         _ownerCheck(nft, tokenId);
         address seller = msg.sender;
-        saleList[nft][tokenId] = Item(tokenId, nft, currency, seller, address(0), FOR_SALE, price);
-        
+        saleList[nft][tokenId] = Item(
+            tokenId,
+            nft,
+            currency,
+            seller,
+            address(0),
+            FOR_SALE,
+            price
+        );
+
         emit ItemListed(nft, tokenId, price, currency, msg.sender, FOR_SALE);
     }
 
-    function cancelList(
-        address nft,
-        uint256 tokenId) external {
-
+    function cancelList(address nft, uint256 tokenId) external {
         _ownerCheck(nft, tokenId);
         Item memory item = saleList[nft][tokenId];
         item.status = CANCELED;
@@ -75,11 +95,7 @@ contract NFTMarket {
         emit ItemCanceled(nft, tokenId, CANCELED);
     }
 
-    function buyNFT(
-        address nft,
-        uint256 tokenId)
-        public {
-
+    function buyNFT(address nft, uint256 tokenId) public {
         Item memory item = saleList[nft][tokenId];
         address buyer = msg.sender;
 
@@ -87,14 +103,18 @@ contract NFTMarket {
         _buy(tokenId, item, buyer);
         emit ItemSold(nft, tokenId, buyer, SOLD);
     }
- 
-    function tokenRecieved(address from, uint256 value, bytes memory data) external returns (bool) {
+
+    function tokenRecieved(
+        address from,
+        uint256 value,
+        bytes memory data
+    ) external returns (bool) {
         Item memory param = abi.decode(data, (Item));
         address nft = param.nft;
         uint256 tokenId = param.tokenId;
         Item memory item = saleList[nft][tokenId];
         require(item.price == value, "Token amount error");
-        
+
         _buyCheck(item, from);
         _buy(tokenId, item, from);
 
@@ -104,10 +124,15 @@ contract NFTMarket {
 
     function isNFT(address contractAddress) internal view returns (bool) {
         ERC165 checker = ERC165(contractAddress);
-        return checker.supportsInterface(_INTERFACE_ID_ERC721) || checker.supportsInterface(_INTERFACE_ID_ERC1155);
+        return
+            checker.supportsInterface(_INTERFACE_ID_ERC721) ||
+            checker.supportsInterface(_INTERFACE_ID_ERC1155);
     }
 
-    function isOwner(address nft, uint256 tokenId) internal view returns (bool) {
+    function isOwner(
+        address nft,
+        uint256 tokenId
+    ) internal view returns (bool) {
         return IERC721(nft).ownerOf(tokenId) == msg.sender;
     }
 
@@ -121,18 +146,18 @@ contract NFTMarket {
         item.status = SOLD;
         saleList[nft][tokenId] = item;
 
-        uint256 fee = price / 1000 * defaultFeeRate;
+        uint256 fee = (price / 1000) * defaultFeeRate;
         IERC20(currency).safeTransferFrom(buyer, seller, price - fee);
         IERC20(currency).safeTransferFrom(buyer, _treasury, fee);
         IERC721(nft).safeTransferFrom(seller, buyer, tokenId);
     }
 
-    function _ownerCheck(address nft, uint256 tokenId) view internal {
+    function _ownerCheck(address nft, uint256 tokenId) internal view {
         require(isNFT(nft), "Not NFT");
         require(isOwner(nft, tokenId), "Not Owner");
     }
 
-    function _buyCheck(Item memory item, address buyer) view internal {
+    function _buyCheck(Item memory item, address buyer) internal view {
         require(isNFT(item.nft), "Not NFT");
         require(item.status == 0 || item.seller != buyer, "Can't Buy");
     }
