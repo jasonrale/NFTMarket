@@ -18,7 +18,7 @@ contract NFTMarket is EIP712, Nonces {
     using SafeERC20 for IERC20;
 
     bytes32 private constant PERMIT_TYPEHASH =
-        keccak256("Permit(address nft, uint256 tokenId, uint256 nonce)");
+        keccak256("Permit(address nft, uint256 tokenId, address wlUser, uint256 nonce)");
     bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
     bytes4 private constant _INTERFACE_ID_ERC1155 = 0xd9b67a26;
     uint8 public FOR_SALE = 0;
@@ -85,7 +85,7 @@ contract NFTMarket is EIP712, Nonces {
         address wlUser
     ) public view returns (bytes32) {
         bytes32 structHash = keccak256(
-            abi.encode(PERMIT_TYPEHASH, nft, tokenId, nonces(wlUser))
+            abi.encode(PERMIT_TYPEHASH, nft, tokenId, wlUser, nonces(wlUser))
         );
         return _hashTypedDataV4(structHash);
     }
@@ -178,7 +178,7 @@ contract NFTMarket is EIP712, Nonces {
         bytes32 s
     ) public returns (bool) {
         bytes32 structHash = keccak256(
-            abi.encode(PERMIT_TYPEHASH, nft, tokenId, _useNonce(msg.sender))
+            abi.encode(PERMIT_TYPEHASH, nft, tokenId, msg.sender, _useNonce(msg.sender))
         );
         bytes32 hash = _hashTypedDataV4(structHash);
         address signer = ECDSA.recover(hash, v, r, s);

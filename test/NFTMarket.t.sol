@@ -22,12 +22,14 @@ contract NFTMarketTest is Test {
     address treasury = makeAddr("treasury");
     address jason = makeAddr("jason");
     address lisa = makeAddr("lisa");
+    address martin = makeAddr("martin");
 
     function setUp() public {
         (admin, adminPK) = makeAddrAndKey("admin");
         deal(admin, 1 ether);
         deal(jason, 1 ether);
         deal(lisa, 1 ether);
+        deal(martin, 1 ether);
 
         vm.startPrank(admin);
         usdt = new TestToken();
@@ -35,7 +37,6 @@ contract NFTMarketTest is Test {
         tokenId = nft.mint(jason,"");
         market = new NFTMarket(FEERATE, treasury);
         vm.stopPrank();
-
     }
 
     function test_listNFT(
@@ -91,6 +92,9 @@ contract NFTMarketTest is Test {
         assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
     }
 
+    /**
+     * 测试验签
+     */
     function test_permit(address nftAddr, uint256 id) public {
         // getHash
         vm.startPrank(admin);
@@ -99,9 +103,11 @@ contract NFTMarketTest is Test {
         vm.stopPrank();
 
         // verify
-        vm.startPrank(lisa);
+        vm.prank(lisa);
         assertTrue(market.permit(nftAddr, id, v, r, s));
-        vm.stopPrank();
+        vm.prank(martin);
+        assertFalse(market.permit(nftAddr, id, v, r, s));
+
     }
 
     function test_tokenRecieved(uint256 price) public {
