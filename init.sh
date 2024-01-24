@@ -1,1 +1,1 @@
-npx graph init --product subgraph-studio --from-contract 0x045474b5D6578fd2b46A87321a6a2a3952c6dF13 --network blast-testnet --abi NFTMarket.j nft-market graph
+sudo npx graph init --product subgraph-studio --from-contract 0x2cD388fC4bd9A7EfE50Bfd30A4b6Efd32e5fD238 --network blast-testnet --abi NFTMarket.json nft-market graph

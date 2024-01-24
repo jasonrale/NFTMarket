@@ -35,21 +35,15 @@ contract NFTMarket {
     mapping(address nft => mapping(uint256 tokenId => Item)) public saleList;
 
     event ItemListed(
-        address nft,
+        address indexed nft,
         uint256 tokenId,
-        uint256 price,
+        uint256 indexed price,
         address currency,
-        address seller,
+        address indexed seller,
         uint8 status
     );
-    event ItemSold(address nft, uint256 tokenId, address buyer, uint8 status);
-    event ItemCanceled(address nft, uint256 tokenId, uint8 status);
-    event onReceived(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes data
-    );
+    event ItemSold(address indexed nft, uint256 tokenId, address indexed buyer, uint8 status);
+    event ItemCanceled(address indexed nft, uint256 tokenId, uint8 status);
 
     constructor(uint256 feeRate, address treasury) {
         defaultFeeRate = feeRate;

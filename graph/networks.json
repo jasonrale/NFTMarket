@@ -1,0 +1,8 @@
+{
+  "blast-testnet": {
+    "NFTMarket": {
+      "address": "0x2cD388fC4bd9A7EfE50Bfd30A4b6Efd32e5fD238",
+      "startBlock": 695685
+    }
+  }
+}
