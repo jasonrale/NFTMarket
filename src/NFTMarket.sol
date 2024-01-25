@@ -17,6 +17,10 @@ interface ERC165 {
 contract NFTMarket is EIP712, Nonces {
     using SafeERC20 for IERC20;
 
+    address private _owner;
+    address private _treasury;
+    uint256 public defaultFeeRate;
+
     bytes32 private constant PERMIT_TYPEHASH =
         keccak256("Permit(address nft, uint256 tokenId, address wlUser, uint256 nonce)");
     bytes4 private constant _INTERFACE_ID_ERC721 = 0x80ac58cd;
@@ -24,10 +28,6 @@ contract NFTMarket is EIP712, Nonces {
     uint8 public FOR_SALE = 0;
     uint8 public SOLD = 1;
     uint8 public CANCELED = 2;
-
-    address private _treasury;
-    address private _owner;
-    uint256 public defaultFeeRate;
 
     struct Item {
         uint256 tokenId;
@@ -57,10 +57,31 @@ contract NFTMarket is EIP712, Nonces {
     );
     event ItemCanceled(address indexed nft, uint256 tokenId, uint8 status);
 
+    modifier onlyOwner {
+        require(msg.sender == _owner, "Not Owner");
+        _;
+    }
+
     constructor(uint256 feeRate, address treasury) EIP712("NFTMarket", "1") {
         defaultFeeRate = feeRate;
         _treasury = treasury;
         _owner = msg.sender;
+    }
+
+    function owner() public view returns (address) {
+        bytes32 data;
+        assembly {
+            data := sload(3) // load from store    
+        }
+        return address(uint160(uint256(data)));
+    }
+
+    function setOwner(address ownerAddr) external onlyOwner returns (bool) {
+        assembly {
+            sstore(3, ownerAddr) // load from store    
+        }
+
+        return _owner == ownerAddr;
     }
 
     function querySaleList(
@@ -71,9 +92,9 @@ contract NFTMarket is EIP712, Nonces {
     }
 
     function nonces(
-        address owner
+        address wlUser
     ) public view virtual override returns (uint256) {
-        return super.nonces(owner);
+        return super.nonces(wlUser);
     }
 
     /**
@@ -83,7 +104,7 @@ contract NFTMarket is EIP712, Nonces {
         address nft,
         uint256 tokenId,
         address wlUser
-    ) public view returns (bytes32) {
+    ) public view onlyOwner returns (bytes32) {
         bytes32 structHash = keccak256(
             abi.encode(PERMIT_TYPEHASH, nft, tokenId, wlUser, nonces(wlUser))
         );

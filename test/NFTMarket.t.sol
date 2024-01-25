@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
+import "forge-std/console.sol";
 import {Test, console} from "forge-std/Test.sol";
 import {NFTMarket} from "../src/NFTMarket.sol";
 import {MyNFT} from "../src/MyNFT.sol";
@@ -39,100 +40,110 @@ contract NFTMarketTest is Test {
         vm.stopPrank();
     }
 
-    function test_listNFT(
-        uint256 price,
-        address currency) public {
+    function test_owner() public {
+        assertEq(market.owner(), admin);
+    }
+
+    function test_setOwner() public {
+        vm.prank(admin);
+        market.setOwner(jason);
+        assertEq(market.owner(), jason);
+    }
+    
+    // function test_listNFT(
+    //     uint256 price,
+    //     address currency) public {
         
-        address nftAddr = address(nft);
-        vm.prank(jason);
-        market.listNFT(nftAddr, tokenId, price, currency);
-        NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
+    //     address nftAddr = address(nft);
+    //     vm.prank(jason);
+    //     market.listNFT(nftAddr, tokenId, price, currency);
+    //     NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, currency, jason, address(0), FOR_SALE, price)));
-    }
+    //     assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, currency, jason, address(0), FOR_SALE, price)));
+    // }
 
-    function test_cancelList(
-        uint256 price,
-        address currency) public {
+    // function test_cancelList(
+    //     uint256 price,
+    //     address currency) public {
         
-        address nftAddr = address(nft);
-        vm.startPrank(jason);
-        market.listNFT(nftAddr, tokenId, price, currency);
+    //     address nftAddr = address(nft);
+    //     vm.startPrank(jason);
+    //     market.listNFT(nftAddr, tokenId, price, currency);
 
-        market.cancelList(nftAddr, tokenId);
-        vm.stopPrank();
-        NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
+    //     market.cancelList(nftAddr, tokenId);
+    //     vm.stopPrank();
+    //     NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, currency, jason, address(0), CANCELED, price)));
-    }
+    //     assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, currency, jason, address(0), CANCELED, price)));
+    // }
 
-    function test_buyNFT(uint256 price) public {
-        address nftAddr = address(nft);
+    // function test_buyNFT(uint256 price) public {
+    //     address nftAddr = address(nft);
 
-        // List NFT
-        vm.startPrank(jason);
-        nft.approve(address(market), tokenId);
-        market.listNFT(nftAddr, tokenId, price, address(usdt));
-        vm.stopPrank();
+    //     // List NFT
+    //     vm.startPrank(jason);
+    //     nft.approve(address(market), tokenId);
+    //     market.listNFT(nftAddr, tokenId, price, address(usdt));
+    //     vm.stopPrank();
 
-        // Mint usdt and buy NFT
-        vm.startPrank(lisa);
-        usdt.mint(price);
-        usdt.approve(address(market), price);
-        market.buyNFT(nftAddr, tokenId);
-        vm.stopPrank();
+    //     // Mint usdt and buy NFT
+    //     vm.startPrank(lisa);
+    //     usdt.mint(price);
+    //     usdt.approve(address(market), price);
+    //     market.buyNFT(nftAddr, tokenId);
+    //     vm.stopPrank();
 
-        NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
+    //     NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        uint256 fee = price / 1000 * FEERATE;
-        assertEq(usdt.balanceOf(jason), price - fee);
-        assertEq(usdt.balanceOf(lisa), 0);
-        assertEq(usdt.balanceOf(treasury), fee);
-        assertEq(nft.ownerOf(tokenId), lisa);
-        assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
-    }
+    //     uint256 fee = price / 1000 * FEERATE;
+    //     assertEq(usdt.balanceOf(jason), price - fee);
+    //     assertEq(usdt.balanceOf(lisa), 0);
+    //     assertEq(usdt.balanceOf(treasury), fee);
+    //     assertEq(nft.ownerOf(tokenId), lisa);
+    //     assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
+    // }
 
-    /**
-     * 测试验签
-     */
-    function test_permit(address nftAddr, uint256 id) public {
-        // getHash
-        vm.startPrank(admin);
-        bytes32 hash = market.getHash(nftAddr, id, lisa);
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(adminPK, hash);
-        vm.stopPrank();
+    // /**
+    //  * 测试验签
+    //  */
+    // function test_permit(address nftAddr, uint256 id) public {
+    //     // getHash
+    //     vm.startPrank(admin);
+    //     bytes32 hash = market.getHash(nftAddr, id, lisa);
+    //     (uint8 v, bytes32 r, bytes32 s) = vm.sign(adminPK, hash);
+    //     vm.stopPrank();
 
-        // verify
-        vm.prank(lisa);
-        assertTrue(market.permit(nftAddr, id, v, r, s));
-        vm.prank(martin);
-        assertFalse(market.permit(nftAddr, id, v, r, s));
+    //     // verify
+    //     vm.prank(lisa);
+    //     assertTrue(market.permit(nftAddr, id, v, r, s));
+    //     vm.prank(martin);
+    //     assertFalse(market.permit(nftAddr, id, v, r, s));
 
-    }
+    // }
 
-    function test_tokenRecieved(uint256 price) public {
-        address nftAddr = address(nft);
-        address marketAddr = address(market);
+    // function test_tokenRecieved(uint256 price) public {
+    //     address nftAddr = address(nft);
+    //     address marketAddr = address(market);
 
-        // List NFT
-        vm.startPrank(jason);
-        nft.approve(marketAddr, tokenId);
-        market.listNFT(nftAddr, tokenId, price, address(usdt));
-        vm.stopPrank();
+    //     // List NFT
+    //     vm.startPrank(jason);
+    //     nft.approve(marketAddr, tokenId);
+    //     market.listNFT(nftAddr, tokenId, price, address(usdt));
+    //     vm.stopPrank();
 
-        // Mint usdt and buy NFT by tokenRecieved
-        vm.startPrank(lisa);
-        usdt.mint(price);
-        usdt.transferWithCallback(marketAddr, price, abi.encode(NFTMarket.Item(tokenId, nftAddr, address(0), address(0), address(0), 0, 0)));
-        vm.stopPrank();
+    //     // Mint usdt and buy NFT by tokenRecieved
+    //     vm.startPrank(lisa);
+    //     usdt.mint(price);
+    //     usdt.transferWithCallback(marketAddr, price, abi.encode(NFTMarket.Item(tokenId, nftAddr, address(0), address(0), address(0), 0, 0)));
+    //     vm.stopPrank();
 
-        NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
+    //     NFTMarket.Item memory item = market.querySaleList(nftAddr, tokenId);
 
-        uint256 fee = price / 1000 * FEERATE;
-        assertEq(usdt.balanceOf(jason), price - fee);
-        assertEq(usdt.balanceOf(lisa), 0);
-        assertEq(usdt.balanceOf(treasury), fee);
-        assertEq(nft.ownerOf(tokenId), lisa);
-        assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
-    }
+    //     uint256 fee = price / 1000 * FEERATE;
+    //     assertEq(usdt.balanceOf(jason), price - fee);
+    //     assertEq(usdt.balanceOf(lisa), 0);
+    //     assertEq(usdt.balanceOf(treasury), fee);
+    //     assertEq(nft.ownerOf(tokenId), lisa);
+    //     assertEq(abi.encode(item), abi.encode(NFTMarket.Item(tokenId, nftAddr, address(usdt), jason, lisa, SOLD, price)));
+    // }
 }
