@@ -14,22 +14,7 @@ interface ERC165 {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
-interface IERC721Permit {
-    function permitList(
-        address owner,
-        address operator,
-        bool approved,
-        uint256 price,
-        address currency,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external; 
-
-    function supportsInterface(bytes4 interfaceId) external view returns (bool);
-}
-
-contract NFTMarketV2 is EIP712Upgradeable, NoncesUpgradeable {
+contract NFTMarketV1 is EIP712Upgradeable, NoncesUpgradeable {
     using SafeERC20 for IERC20;
 
     address private _owner;
@@ -78,7 +63,7 @@ contract NFTMarketV2 is EIP712Upgradeable, NoncesUpgradeable {
     }
 
     function initialize(uint256 feeRate, address treasury) external initializer {
-        __EIP712_init("NFTMarket", "2");
+        __EIP712_init("NFTMarket", "1");
         __Nonces_init();
 
         defaultFeeRate = feeRate;
@@ -186,30 +171,6 @@ contract NFTMarketV2 is EIP712Upgradeable, NoncesUpgradeable {
         _buyCheck(item, buyer);
         _buy(tokenId, item, buyer);
         emit ItemSold(nft, tokenId, buyer, SOLD);
-    }
-
-    /**
-     * 购买离线签名上架的NFT
-     */
-    function buyNFTForOffLine (
-        address nftOwner,
-        address nft,
-        uint256 tokenId,
-        uint256 price,
-        address currency,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
-        address buyer = msg.sender;
-        require(isNFT(nft), "Not NFT");
-        require(nftOwner != buyer, "Can't Buy");
-        IERC721Permit(nft).permitList(nftOwner, address(this), true, price, currency, v, r, s);
-
-        uint256 fee = (price / 1000) * defaultFeeRate;
-        IERC20(currency).safeTransferFrom(buyer, nftOwner, price - fee);
-        IERC20(currency).safeTransferFrom(buyer, _treasury, fee);
-        IERC721(nft).safeTransferFrom(nftOwner, buyer, tokenId);
     }
 
     function tokenRecieved(
