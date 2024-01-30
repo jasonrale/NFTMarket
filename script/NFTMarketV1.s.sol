@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import "./BaseScript.s.sol";
 import "../src/NFTMarketV1.sol";
 
-import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-
 contract NFTMarketV1Script is BaseScript {
     function run() public broadcaster {
         Options memory opts;
@@ -21,6 +19,6 @@ contract NFTMarketV1Script is BaseScript {
             ,opts
         );
 
-        console.log("Counter deployed on %s", address(proxy));
+        console.log("NFTMarketV1 deployed on %s", address(proxy));
     }
 }

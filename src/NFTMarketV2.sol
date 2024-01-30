@@ -29,6 +29,7 @@ interface IERC721Permit {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }
 
+/// @custom:oz-upgrades-from NFTMarketV1
 contract NFTMarketV2 is EIP712Upgradeable, NoncesUpgradeable {
     using SafeERC20 for IERC20;
 
