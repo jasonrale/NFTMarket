@@ -14,13 +14,13 @@ contract UpToNFTMarketV2 is BaseScript {
         address implementation = Upgrades.getImplementationAddress(proxy);
         console.log("Before upgrade address: %s", implementation);
 
-        Upgrades.upgradeProxy( 
+        Upgrades.upgradeProxy(
             proxy,
-            "NFTMarketV2.sol"
-            // abi.encodeCall(
-            //     NFTMarketV2.initialize,
-            //     (25, 0x20ae1f29849E8392BD83c3bCBD6bD5301a6656F8)
-            // )
+            "NFTMarketV2.sol",
+            abi.encodeCall(
+                NFTMarketV2.initialize,
+                (25, 0x20ae1f29849E8392BD83c3bCBD6bD5301a6656F8)
+            )
         );
 
         implementation = Upgrades.getImplementationAddress(proxy);

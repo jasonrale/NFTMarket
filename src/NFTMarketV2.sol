@@ -78,7 +78,7 @@ contract NFTMarketV2 is EIP712Upgradeable, NoncesUpgradeable {
         _;
     }
 
-    function initialize(uint256 feeRate, address treasury) external initializer {
+    function initialize(uint256 feeRate, address treasury) external reinitializer(2)  {
         __EIP712_init("NFTMarket", "2");
         __Nonces_init();
 
